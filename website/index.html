@@ -405,8 +405,10 @@ window.ANIMATION_DATA = {"source":{"repo":"https://github.com/AliceDel66/ai-pm-r
   for(i=0;i<A.length;i++) byId[A[i].id]=A[i];
   var LS='aipm-anim-learn-v1';
   var saved={}; try{ saved=JSON.parse(localStorage.getItem(LS))||{}; }catch(e){ saved={}; }
+  var hashId='';
+  try{ hashId=decodeURIComponent((location.hash||'').replace(/^#/,'')); }catch(e){ hashId=''; }
   var S={
-    id: (saved.id && byId[saved.id]) ? saved.id : A[0].id,
+    id: (hashId && byId[hashId]) ? hashId : ((saved.id && byId[saved.id]) ? saved.id : A[0].id),
     idx:0, playing:false, speed:saved.speed||1, filter:'all', q:'',
     theme:saved.theme||'light', done:new Set(saved.done||[]), timer:null
   };
@@ -708,6 +710,7 @@ window.ANIMATION_DATA = {"source":{"repo":"https://github.com/AliceDel66/ai-pm-r
   function select(id){
     if(!byId[id]) return;
     stop(); S.id=id; S.idx=0; save();
+    try{ history.replaceState(null,'','#'+id); }catch(e){}
     renderAll();
     window.scrollTo({top:0,behavior:'smooth'});
   }
@@ -748,6 +751,11 @@ window.ANIMATION_DATA = {"source":{"repo":"https://github.com/AliceDel66/ai-pm-r
     else if(e.key==='ArrowRight'){ e.preventDefault(); stepBy(1); }
     else if(e.key==='['){ jumpAnim(-1); }
     else if(e.key===']'){ jumpAnim(1); }
+  });
+  window.addEventListener('hashchange',function(){
+    var hid='';
+    try{ hid=decodeURIComponent((location.hash||'').replace(/^#/,'')); }catch(e){}
+    if(hid && byId[hid] && hid!==S.id) select(hid);
   });
   var rt=null;
   window.addEventListener('resize',function(){
